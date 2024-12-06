@@ -9,6 +9,7 @@ import base64
 import typing
 from dataclasses import dataclass, field
 from email.utils import parseaddr
+import re
 
 from .exceptions import ValidationError
 
@@ -19,11 +20,16 @@ class EmailAddress:
 
     def __post_init__(self):
         name, addr = parseaddr(self.email)
-        if not addr:
+        if not addr or not self._is_valid_email(addr):
             raise ValidationError(f"Invalid email address: {self.email}")
         self.email = addr
         if not self.name and name:
             self.name = name
+
+    def _is_valid_email(self, email: str) -> bool:
+        """Validate email address format"""
+        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        return bool(re.match(pattern, email))
 
     def __str__(self):
         if self.name:

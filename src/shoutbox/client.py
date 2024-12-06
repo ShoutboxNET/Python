@@ -63,7 +63,17 @@ class ShoutboxClient:
                 verify=self.verify_ssl
             )
             
-            response.raise_for_status()
+            if response.status_code >= 400:
+                try:
+                    error_body = response.json()
+                except ValueError:
+                    error_body = response.text
+                raise APIError(
+                    f"API request failed: {response.text}",
+                    response.status_code,
+                    error_body
+                )
+            
             return response.json()
             
         except requests.exceptions.Timeout:
@@ -72,17 +82,9 @@ class ShoutboxClient:
             raise ShoutboxError("SSL verification failed")
         except requests.exceptions.ConnectionError:
             raise ShoutboxError("Connection error")
-        except requests.exceptions.HTTPError:
-            try:
-                error_body = response.json()
-            except ValueError:
-                error_body = None
-            raise APIError(
-                f"API request failed: {response.text}",
-                response.status_code,
-                error_body
-            )
         except Exception as e:
+            if isinstance(e, APIError):
+                raise
             raise ShoutboxError(f"Unexpected error: {str(e)}")
 
     def __enter__(self):

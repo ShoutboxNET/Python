@@ -1,25 +1,12 @@
 """
-Shoutbox Email API Client
-~~~~~~~~~~~~~~~~~~~~~~~~
+Shoutbox Python Library
+~~~~~~~~~~~~~~~~~~~~~
 
-A Python client for the Shoutbox Email API.
-
-Basic usage:
-
-    >>> from shoutbox import ShoutboxClient, Email
-    >>> client = ShoutboxClient('your-api-key')
-    >>> email = Email(
-    ...     to='recipient@example.com',
-    ...     subject='Hello',
-    ...     html='<h1>Hello World!</h1>'
-    ... )
-    >>> response = client.send(email)
-
-:copyright: (c) 2024 by Your Name.
-:license: MIT, see LICENSE for more details.
+A Python library for sending emails through Shoutbox.net.
 """
 
 from .client import ShoutboxClient
+from .smtp import SMTPClient
 from .models import Email, EmailAddress, Attachment
 from .exceptions import ShoutboxError, ValidationError, APIError
 
@@ -27,10 +14,11 @@ __version__ = '0.1.0'
 
 __all__ = [
     'ShoutboxClient',
+    'SMTPClient',
     'Email',
     'EmailAddress',
     'Attachment',
     'ShoutboxError',
     'ValidationError',
-    'APIError',
+    'APIError'
 ]
