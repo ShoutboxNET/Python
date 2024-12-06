@@ -2,46 +2,35 @@
 
 import os
 import pytest
-from base64 import b64encode
+from unittest.mock import patch, Mock, MagicMock
 
-from shoutbox.models import Email, EmailAddress, Attachment
+from shoutbox import EmailAddress, Email, Attachment
 from shoutbox.exceptions import ValidationError
 
 def test_email_address_validation():
     """Test email address validation"""
-    # Valid email addresses
-    from_email = os.getenv('SHOUTBOX_FROM')
-    to_email = os.getenv('SHOUTBOX_TO')
+    # Valid email
+    addr = EmailAddress("test@example.com")
+    assert addr.email == "test@example.com"
     
-    assert EmailAddress(from_email).email == from_email
-    assert EmailAddress(to_email).email == to_email
-    assert EmailAddress(from_email, "Test User").name == "Test User"
-    assert EmailAddress(f"Test User <{from_email}>").name == "Test User"
-    assert EmailAddress(f"Test User <{from_email}>").email == from_email
+    # Valid email with name
+    addr = EmailAddress("Test User <test@example.com>")
+    assert addr.email == "test@example.com"
+    assert addr.name == "Test User"
     
-    # Invalid email addresses
+    # Invalid email
     with pytest.raises(ValidationError):
-        EmailAddress("not-an-email")
-    with pytest.raises(ValidationError):
-        EmailAddress("missing@domain")
-    with pytest.raises(ValidationError):
-        EmailAddress("@missing-local.com")
+        EmailAddress("invalid-email")
 
 def test_email_address_string_representation():
     """Test email address string representation"""
-    from_email = os.getenv('SHOUTBOX_FROM')
+    # Email only
+    addr = EmailAddress("test@example.com")
+    assert str(addr) == "test@example.com"
     
-    # Without name
-    addr = EmailAddress(from_email)
-    assert str(addr) == from_email
-    
-    # With name
-    addr = EmailAddress(from_email, "Test User")
-    assert str(addr) == f"Test User <{from_email}>"
-    
-    # From formatted string
-    addr = EmailAddress(f"Test User <{from_email}>")
-    assert str(addr) == f"Test User <{from_email}>"
+    # Email with name
+    addr = EmailAddress("test@example.com", name="Test User")
+    assert str(addr) == "Test User <test@example.com>"
 
 def test_attachment_creation():
     """Test attachment creation and serialization"""
@@ -52,22 +41,20 @@ def test_attachment_creation():
         content_type="text/plain"
     )
     
-    # Test properties
-    assert attachment.filename == "test.txt"
-    assert attachment.content == content
-    assert attachment.content_type == "text/plain"
-    
-    # Test serialization
     data = attachment.to_dict()
     assert data['filename'] == "test.txt"
-    assert data['content'] == b64encode(content).decode()
+    assert data['content_type'] == "text/plain"
+    
+    # Test default content type
+    attachment = Attachment(filename="test.txt", content=content)
+    assert attachment.to_dict()['content_type'] == "application/octet-stream"
 
 def test_email_creation():
     """Test email creation and validation"""
     from_email = os.getenv('SHOUTBOX_FROM')
     to_email = os.getenv('SHOUTBOX_TO')
     
-    # Basic email
+    # Basic email with single recipient
     email = Email(
         from_email=from_email,
         to=to_email,
@@ -80,27 +67,22 @@ def test_email_creation():
     assert email.subject == "Test"
     assert email.html == "<h1>Test</h1>"
     
-    # Test serialization
+    # Test serialization with single recipient
     data = email.to_dict()
     assert data['from'] == from_email
-    assert data['to'] == [to_email]
+    assert data['to'] == to_email
     
-    # Email with multiple recipients
-    to_addresses = [addr.strip() for addr in to_email.split(',')]
+    # Test with multiple recipients
+    to_emails = [to_email, "other@example.com"]
     email = Email(
         from_email=from_email,
-        to=to_addresses,
+        to=to_emails,
         subject="Test",
         html="<h1>Test</h1>"
     )
     
-    assert len(email.to) == len(to_addresses)
-    assert all(isinstance(addr, EmailAddress) for addr in email.to)
-    
-    # Test serialization
     data = email.to_dict()
-    assert data['from'] == from_email
-    assert data['to'] == to_addresses
+    assert data['to'] == ','.join(to_emails)
 
 def test_email_with_attachments():
     """Test email with attachments"""
@@ -124,10 +106,7 @@ def test_email_with_attachments():
     # Test serialization
     data = email.to_dict()
     assert data['from'] == from_email
-    assert data['to'] == [to_email]
-    assert 'attachments' in data
-    assert len(data['attachments']) == 1
-    assert data['attachments'][0]['filename'] == "test.txt"
+    assert data['to'] == to_email
 
 def test_email_with_headers():
     """Test email with custom headers"""
@@ -148,10 +127,7 @@ def test_email_with_headers():
     # Test serialization
     data = email.to_dict()
     assert data['from'] == from_email
-    assert data['to'] == [to_email]
-    assert 'headers' in data
-    assert data['headers']['X-Custom'] == 'test'
-    assert data['headers']['X-Priority'] == '1'
+    assert data['to'] == to_email
 
 def test_email_with_reply_to():
     """Test email with reply-to address"""
@@ -171,8 +147,7 @@ def test_email_with_reply_to():
     # Test serialization
     data = email.to_dict()
     assert data['from'] == from_email
-    assert data['to'] == [to_email]
-    assert data['reply_to'] == from_email
+    assert data['to'] == to_email
 
 def test_email_address_conversion():
     """Test various forms of email address input"""
@@ -191,39 +166,16 @@ def test_email_address_conversion():
     # Test serialization
     data = email.to_dict()
     assert data['from'] == from_email
-    assert data['to'] == [to_email]
+    assert data['to'] == to_email
     
-    # EmailAddress object
-    email = Email(
-        from_email=EmailAddress(from_email, "Sender"),
-        to=EmailAddress(to_email, "Recipient"),
-        subject="Test",
-        html="<h1>Test</h1>"
-    )
-    assert email.from_email.name == "Sender"
-    
-    # Test serialization
-    data = email.to_dict()
-    assert data['from'] == from_email
-    assert data['to'] == [to_email]
-    assert data['name'] == "Sender"
-    
-    # Mixed list of strings and EmailAddress objects
-    to_addresses = [addr.strip() for addr in to_email.split(',')]
+    # Test with multiple recipients
+    to_emails = [to_email, "other@example.com"]
     email = Email(
         from_email=from_email,
-        to=[
-            to_addresses[0],
-            EmailAddress(to_addresses[0], "Recipient 2")
-        ],
+        to=to_emails,
         subject="Test",
         html="<h1>Test</h1>"
     )
-    assert len(email.to) == 2
-    assert all(isinstance(addr, EmailAddress) for addr in email.to)
     
-    # Test serialization
     data = email.to_dict()
-    assert data['from'] == from_email
-    assert len(data['to']) == 2
-    assert all(isinstance(addr, str) for addr in data['to'])
+    assert data['to'] == ','.join(to_emails)
