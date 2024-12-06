@@ -10,11 +10,11 @@ def send_basic_email():
     client = SMTPClient()
 
     email = Email(
-        from_email=EmailAddress("sender@example.com", "Sender Name"),
-        to="recipient@example.com",
+        from_email=EmailAddress(os.getenv('SHOUTBOX_FROM'), "Sender Name"),
+        to=os.getenv('SHOUTBOX_TO'),
         subject="Test Email via SMTP Client",
         html="<h1>Hello!</h1><p>This is a test email sent using the Shoutbox SMTP Client.</p>",
-        reply_to="reply@example.com"
+        reply_to=os.getenv('SHOUTBOX_FROM')
     )
 
     try:
@@ -39,8 +39,8 @@ def send_email_with_attachment():
     )
 
     email = Email(
-        from_email="sender@example.com",
-        to="recipient@example.com",
+        from_email=os.getenv('SHOUTBOX_FROM'),
+        to=os.getenv('SHOUTBOX_TO'),
         subject="Test Email with Attachment via SMTP",
         html="<h1>Hello!</h1><p>This email includes an attachment.</p>",
         attachments=[attachment]
@@ -56,9 +56,12 @@ def send_email_with_multiple_recipients():
     """Send an email to multiple recipients using the SMTP client"""
     client = SMTPClient()
 
+    # Split SHOUTBOX_TO into multiple recipients if it contains commas
+    to_addresses = [addr.strip() for addr in os.getenv('SHOUTBOX_TO').split(',')]
+
     email = Email(
-        from_email="sender@example.com",
-        to=["recipient1@example.com", "recipient2@example.com"],
+        from_email=os.getenv('SHOUTBOX_FROM'),
+        to=to_addresses,
         subject="Test Email with Multiple Recipients via SMTP",
         html="<h1>Hello!</h1><p>This email is sent to multiple recipients.</p>",
         headers={
@@ -77,11 +80,14 @@ def send_email_with_named_recipients():
     """Send an email with named recipients using the SMTP client"""
     client = SMTPClient()
 
+    # Split SHOUTBOX_TO into multiple recipients if it contains commas
+    to_addresses = [addr.strip() for addr in os.getenv('SHOUTBOX_TO').split(',')]
+
     email = Email(
-        from_email=EmailAddress("sender@example.com", "Sender Name"),
+        from_email=EmailAddress(os.getenv('SHOUTBOX_FROM'), "Sender Name"),
         to=[
-            EmailAddress("recipient1@example.com", "John Doe"),
-            EmailAddress("recipient2@example.com", "Jane Smith")
+            EmailAddress(addr, f"Recipient {i+1}")
+            for i, addr in enumerate(to_addresses)
         ],
         subject="Test Email with Named Recipients via SMTP",
         html="<h1>Hello!</h1><p>This email is sent to recipients with display names.</p>"
@@ -103,8 +109,8 @@ def send_email_with_custom_smtp_settings():
     )
 
     email = Email(
-        from_email="sender@example.com",
-        to="recipient@example.com",
+        from_email=os.getenv('SHOUTBOX_FROM'),
+        to=os.getenv('SHOUTBOX_TO'),
         subject="Test Email with Custom SMTP Settings",
         html="<h1>Hello!</h1><p>This email was sent using custom SMTP settings.</p>"
     )

@@ -2,9 +2,9 @@
 Example of Flask integration with Shoutbox
 """
 
+import os
 from flask import Flask, request, jsonify
 from shoutbox import ShoutboxClient, Email, EmailAddress, Attachment
-import os
 
 app = Flask(__name__)
 
@@ -15,13 +15,11 @@ client = ShoutboxClient(api_key=os.getenv('SHOUTBOX_API_KEY'))
 def send_email():
     """Basic email sending endpoint"""
     try:
-        data = request.json
-        
         email = Email(
-            from_email=data.get('from', 'sender@yourdomain.com'),
-            to=data['to'],
-            subject=data['subject'],
-            html=data['html']
+            from_email=os.getenv('SHOUTBOX_FROM'),
+            to=request.json.get('to', os.getenv('SHOUTBOX_TO')),
+            subject=request.json['subject'],
+            html=request.json['html']
         )
         
         response = client.send(email)
@@ -48,8 +46,8 @@ def send_email_with_attachment():
         
         # Create email with attachment
         email = Email(
-            from_email=request.form.get('from', 'sender@yourdomain.com'),
-            to=request.form['to'],
+            from_email=os.getenv('SHOUTBOX_FROM'),
+            to=request.form.get('to', os.getenv('SHOUTBOX_TO')),
             subject=request.form['subject'],
             html=request.form['html'],
             attachments=[attachment]
@@ -64,14 +62,15 @@ def send_email_with_attachment():
 def send_bulk_email():
     """Endpoint for sending emails to multiple recipients"""
     try:
-        data = request.json
+        # Use provided recipients or split SHOUTBOX_TO
+        to_addresses = request.json.get('to', os.getenv('SHOUTBOX_TO').split(','))
         
         email = Email(
-            from_email=data.get('from', 'sender@yourdomain.com'),
-            to=data['to'],  # List of recipients
-            subject=data['subject'],
-            html=data['html'],
-            headers=data.get('headers', {})
+            from_email=os.getenv('SHOUTBOX_FROM'),
+            to=to_addresses,
+            subject=request.json['subject'],
+            html=request.json['html'],
+            headers=request.json.get('headers', {})
         )
         
         response = client.send(email)
@@ -79,27 +78,24 @@ def send_bulk_email():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
-# Example of a form submission handler
 @app.route('/contact-form', methods=['POST'])
 def handle_contact_form():
     """Handle contact form submission"""
     try:
-        data = request.form
-        
         # Create email from form data
         email = Email(
             from_email=EmailAddress(
-                data['email'],
-                data.get('name', '')
+                request.form['email'],
+                request.form.get('name', '')
             ),
-            to='contact@yourdomain.com',
-            subject=f"Contact Form: {data['subject']}",
+            to=os.getenv('SHOUTBOX_FROM'),  # Send to SHOUTBOX_FROM as contact email
+            subject=f"Contact Form: {request.form['subject']}",
             html=f"""
                 <h2>Contact Form Submission</h2>
-                <p><strong>From:</strong> {data.get('name', 'Not provided')} ({data['email']})</p>
-                <p><strong>Subject:</strong> {data['subject']}</p>
+                <p><strong>From:</strong> {request.form.get('name', 'Not provided')} ({request.form['email']})</p>
+                <p><strong>Subject:</strong> {request.form['subject']}</p>
                 <p><strong>Message:</strong></p>
-                <p>{data['message']}</p>
+                <p>{request.form['message']}</p>
             """
         )
         
@@ -110,38 +106,35 @@ def handle_contact_form():
 
 if __name__ == '__main__':
     # For testing purposes
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
 
 """
 Example usage with curl:
 
 # Basic email
-curl -X POST http://localhost:5000/send-email \
+curl -X POST http://localhost:5001/send-email \
     -H "Content-Type: application/json" \
     -d '{
-        "to": "recipient@example.com",
         "subject": "Test Email",
         "html": "<h1>Hello!</h1><p>This is a test email.</p>"
     }'
 
 # Email with attachment
-curl -X POST http://localhost:5000/send-email-with-attachment \
-    -F "to=recipient@example.com" \
+curl -X POST http://localhost:5001/send-email-with-attachment \
     -F "subject=Test Email with Attachment" \
     -F "html=<h1>Hello!</h1><p>This email has an attachment.</p>" \
     -F "file=@/path/to/file.pdf"
 
 # Bulk email
-curl -X POST http://localhost:5000/send-bulk-email \
+curl -X POST http://localhost:5001/send-bulk-email \
     -H "Content-Type: application/json" \
     -d '{
-        "to": ["recipient1@example.com", "recipient2@example.com"],
         "subject": "Bulk Test Email",
         "html": "<h1>Hello!</h1><p>This is a bulk test email.</p>"
     }'
 
 # Contact form
-curl -X POST http://localhost:5000/contact-form \
+curl -X POST http://localhost:5001/contact-form \
     -F "name=John Doe" \
     -F "email=john@example.com" \
     -F "subject=Test Contact" \

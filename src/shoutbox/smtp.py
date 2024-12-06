@@ -2,7 +2,7 @@
 Shoutbox SMTP client
 ~~~~~~~~~~~~~~~~~
 
-This module contains the Shoutbox SMTP client class.
+This module contains the SMTP client class.
 """
 
 import os
@@ -10,10 +10,9 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
-from email.utils import formataddr
 
 from .models import Email
-from .exceptions import ShoutboxError, ValidationError
+from .exceptions import ShoutboxError
 
 class SMTPClient:
     """Client for the Shoutbox SMTP service"""
@@ -21,7 +20,7 @@ class SMTPClient:
     def __init__(
         self, 
         api_key: str = None,
-        host: str = "smtp.shoutbox.net",
+        host: str = "api.shoutbox.net",  # Changed from smtp.shoutbox.net
         port: int = 587,
         use_tls: bool = True,
         timeout: int = 30
@@ -59,7 +58,7 @@ class SMTPClient:
                 msg['From'] = str(email.from_email)
             
             # Set To header(s)
-            msg['To'] = ','.join(str(addr) for addr in email.to)
+            msg['To'] = ', '.join(str(addr) for addr in email.to)
             
             # Set Reply-To if provided
             if email.reply_to:
@@ -77,13 +76,13 @@ class SMTPClient:
             for attachment in email.attachments:
                 mime_attachment = MIMEApplication(attachment.content)
                 mime_attachment.add_header(
-                    'Content-Disposition', 
-                    'attachment', 
+                    'Content-Disposition',
+                    'attachment',
                     filename=attachment.filename
                 )
                 if attachment.content_type:
                     mime_attachment.add_header(
-                        'Content-Type', 
+                        'Content-Type',
                         attachment.content_type
                     )
                 msg.attach(mime_attachment)
@@ -99,7 +98,7 @@ class SMTPClient:
                 
                 # Send the email
                 server.send_message(msg)
-                
+            
             return True
             
         except smtplib.SMTPAuthenticationError:
@@ -113,4 +112,4 @@ class SMTPClient:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        pass  # SMTP connection is handled within the send method
+        pass  # No cleanup needed

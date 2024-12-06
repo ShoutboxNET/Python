@@ -3,23 +3,25 @@ Example of using Shoutbox API directly without the client library
 """
 
 import os
-import json
 import requests
+import base64
 
-# Get API key from environment variable or use a placeholder
+# Get API key and email addresses from environment variables
 api_key = os.getenv('SHOUTBOX_API_KEY', 'your-api-key-here')
+from_email = os.getenv('SHOUTBOX_FROM', 'sender@example.com')
+to_email = os.getenv('SHOUTBOX_TO', 'recipient@example.com')
 
 def send_basic_email():
     """Send a basic email using direct API calls"""
     data = {
-        'from': 'sender@example.com',
-        'to': 'recipient@example.com',
+        'from': from_email,
+        'to': to_email,
         'subject': 'Test Email via Direct API',
         'html': '<h1>Hello!</h1><p>This is a test email sent directly via the Shoutbox API.</p>',
         'name': 'Sender Name',
-        'reply_to': 'reply@example.com'
+        'reply_to': from_email
     }
-
+   
     response = requests.post(
         'https://api.shoutbox.net/send',
         headers={
@@ -36,12 +38,11 @@ def send_email_with_attachment():
     """Send an email with attachment using direct API calls"""
     # Read file content and encode as base64
     with open('examples/test.txt', 'rb') as f:
-        import base64
         file_content = base64.b64encode(f.read()).decode()
 
     data = {
-        'from': 'sender@example.com',
-        'to': 'recipient@example.com',
+        'from': from_email,
+        'to': to_email,
         'subject': 'Test Email with Attachment via Direct API',
         'html': '<h1>Hello!</h1><p>This email includes an attachment.</p>',
         'attachments': [{
@@ -65,8 +66,8 @@ def send_email_with_attachment():
 def send_email_with_custom_headers():
     """Send an email with custom headers using direct API calls"""
     data = {
-        'from': 'sender@example.com',
-        'to': 'recipient@example.com',
+        'from': from_email,
+        'to': to_email,
         'subject': 'Test Email with Custom Headers via Direct API',
         'html': '<h1>Hello!</h1><p>This email includes custom headers.</p>',
         'headers': {

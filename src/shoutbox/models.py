@@ -45,14 +45,18 @@ class Attachment:
     def to_dict(self):
         return {
             'filename': self.filename,
-            'content': base64.b64encode(self.content).decode()
+            'content': base64.b64encode(self.content).decode(),
+            'content_type': self.content_type or 'application/octet-stream'
         }
 
 @dataclass
 class Email:
     to: typing.Union[str, list[str], EmailAddress, list[EmailAddress]]
     subject: str
-    html: str
+    html: typing.Optional[str] = None
+    text: typing.Optional[str] = None
+    cc: typing.Optional[typing.Union[str, list[str], EmailAddress, list[EmailAddress]]] = None
+    bcc: typing.Optional[typing.Union[str, list[str], EmailAddress, list[EmailAddress]]] = None
     from_email: typing.Optional[typing.Union[str, EmailAddress]] = None
     reply_to: typing.Optional[typing.Union[str, EmailAddress]] = None
     headers: typing.Optional[dict] = field(default_factory=dict)
@@ -67,31 +71,61 @@ class Email:
         elif isinstance(self.to, EmailAddress):
             self.to = [self.to]
 
+        if self.cc:
+            if isinstance(self.cc, str):
+                self.cc = [EmailAddress(self.cc)]
+            elif isinstance(self.cc, list):
+                self.cc = [EmailAddress(addr) if isinstance(addr, str) else addr for addr in self.cc]
+            elif isinstance(self.cc, EmailAddress):
+                self.cc = [self.cc]
+            
+        if self.bcc:
+            if isinstance(self.bcc, str):
+                self.bcc = [EmailAddress(self.bcc)]
+            elif isinstance(self.bcc, list):
+                self.bcc = [EmailAddress(addr) if isinstance(addr, str) else addr for addr in self.bcc]
+            elif isinstance(self.bcc, EmailAddress):
+                self.bcc = [self.bcc]
+
         if isinstance(self.from_email, str):
             self.from_email = EmailAddress(self.from_email)
         
         if isinstance(self.reply_to, str):
             self.reply_to = EmailAddress(self.reply_to)
 
-    def to_dict(self) -> dict:
-        payload = {
-            'to': ','.join(str(addr) for addr in self.to),
-            'subject': self.subject,
-            'html': self.html
-        }
+        if self.text and self.html: 
+            self.text = None    
         
-        if self.from_email:
-            payload['from'] = str(self.from_email)
-            if self.from_email.name:
-                payload['name'] = self.from_email.name
+        if not self.html and not self.text:
+            raise ValidationError("Email must have either HTML or text content")
 
+    def to_dict(self) -> dict:
+        """Convert email to API payload format"""
+        payload = {
+            'to': ','.join([addr.email for addr in self.to]),
+            'subject': self.subject,
+            'html': self.html,
+            'from': self.from_email.email if self.from_email else None
+        }
+
+        # Add optional fields only if they have values
+        if self.from_email and self.from_email.name:
+            payload['name'] = self.from_email.name
+        
+        if self.cc: 
+            payload['cc'] = ','.join([addr.email for addr in self.cc])
+
+        if self.bcc:
+            payload['bcc'] = ','.join([addr.email for addr in self.bcc])
+            
         if self.reply_to:
-            payload['reply_to'] = str(self.reply_to)
-
+            payload['reply_to'] = self.reply_to.email
+        
         if self.headers:
             payload['headers'] = self.headers
-
+            
         if self.attachments:
             payload['attachments'] = [att.to_dict() for att in self.attachments]
 
-        return payload
+        # Remove None values
+        return {k: v for k, v in payload.items() if v is not None}

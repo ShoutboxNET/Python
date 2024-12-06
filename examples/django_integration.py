@@ -1,9 +1,6 @@
 """
 Example of Django integration with Shoutbox
 
-This example shows how to integrate Shoutbox with Django using a custom email backend
-and includes example views for sending emails.
-
 Directory structure for a Django project:
 
 myproject/
@@ -22,7 +19,12 @@ myproject/
 """
 # Add to your Django settings.py:
 
-SHOUTBOX_API_KEY = 'your-api-key-here'  # Better to use environment variable
+import os
+
+SHOUTBOX_API_KEY = os.getenv('SHOUTBOX_API_KEY')
+SHOUTBOX_FROM = os.getenv('SHOUTBOX_FROM')
+SHOUTBOX_TO = os.getenv('SHOUTBOX_TO')
+
 EMAIL_BACKEND = 'myapp.backends.ShoutboxEmailBackend'
 """
 
@@ -48,11 +50,8 @@ class ShoutboxEmailBackend(BaseEmailBackend):
             try:
                 # Convert Django email message to Shoutbox email
                 email = Email(
-                    from_email=EmailAddress(
-                        message.from_email,
-                        message.from_email.split('<')[0].strip() if '<' in message.from_email else None
-                    ),
-                    to=[addr for addr in message.to],
+                    from_email=message.from_email or settings.SHOUTBOX_FROM,
+                    to=[addr for addr in message.to] or [settings.SHOUTBOX_TO],
                     subject=message.subject,
                     html=message.body if message.content_subtype == 'html' else f'<pre>{message.body}</pre>'
                 )
@@ -104,8 +103,8 @@ def send_basic_email(request):
         send_mail(
             'Test Email',
             'This is a test email.',
-            'from@yourdomain.com',
-            ['to@example.com'],
+            settings.SHOUTBOX_FROM,
+            [settings.SHOUTBOX_TO],
             html_message='<h1>Test Email</h1><p>This is a test email.</p>'
         )
         return JsonResponse({'success': True})
@@ -118,8 +117,8 @@ def send_email_with_attachment(request):
         message = EmailMessage(
             'Test Email with Attachment',
             '<h1>Test Email</h1><p>This email has an attachment.</p>',
-            'from@yourdomain.com',
-            ['to@example.com']
+            settings.SHOUTBOX_FROM,
+            [settings.SHOUTBOX_TO]
         )
         message.content_subtype = 'html'
         
@@ -148,7 +147,7 @@ def handle_contact_form(request):
                     <p>{form.cleaned_data['message']}</p>
                     """,
                     form.cleaned_data['email'],
-                    ['contact@yourdomain.com'],
+                    [settings.SHOUTBOX_FROM],  # Send to SHOUTBOX_FROM as contact email
                     reply_to=[form.cleaned_data['email']]
                 )
                 message.content_subtype = 'html'

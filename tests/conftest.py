@@ -2,37 +2,40 @@
 
 import os
 import pytest
-from unittest.mock import patch
+import subprocess
 
 @pytest.fixture(autouse=True)
-def mock_env_vars():
-    """Mock environment variables for testing"""
-    with patch.dict(os.environ, {
-        'SHOUTBOX_API_KEY': 'test-key',
-        'SHOUTBOX_FROM': 'test@example.com',
-        'SHOUTBOX_TO': 'recipient@example.com'
-    }):
-        yield
+def setup_env():
+    """Ensure environment variables are set from .env file"""
+    result = subprocess.run(
+        ['bash', '-c', 'source .env && env'],
+        capture_output=True,
+        text=True
+    )
+    for line in result.stdout.splitlines():
+        if '=' in line:
+            key, value = line.split('=', 1)
+            os.environ[key] = value
 
 @pytest.fixture
 def api_client():
     """Create a test API client"""
     from shoutbox import ShoutboxClient
-    return ShoutboxClient(api_key='test-key')
+    return ShoutboxClient()
 
 @pytest.fixture
 def smtp_client():
     """Create a test SMTP client"""
     from shoutbox import SMTPClient
-    return SMTPClient(api_key='test-key')
+    return SMTPClient()
 
 @pytest.fixture
 def sample_email():
     """Create a sample email for testing"""
     from shoutbox import Email
     return Email(
-        from_email="sender@example.com",
-        to="recipient@example.com",
+        from_email=os.getenv('SHOUTBOX_FROM'),
+        to=os.getenv('SHOUTBOX_TO'),
         subject="Test Email",
         html="<h1>Test</h1>"
     )

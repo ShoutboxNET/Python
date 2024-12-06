@@ -33,9 +33,17 @@ update:
 test: check-env
 	python -m pytest tests/ -v --cov=shoutbox
 
+# Test direct API specifically
+test-direct-api:
+	bash -c "set -a && source ./.env && set +a && python -m pytest -s tests/test_direct_api.py -v"
+
+# Test API client specifically
+test-api-client:
+	bash -c "set -a && source ./.env && set +a && python -m pytest -s tests/test_api_client.py -v"
+
 # Run direct API example
 run-direct-api: check-env
-	python examples/direct_api.py
+	bash -c "set -a && source ./.env && set +a && python examples/direct_api.py"
 
 # Run API client example
 run-api-client: check-env
@@ -80,15 +88,17 @@ env-template:
 help:
 	@echo "Available commands:"
 	@echo "  make install      - Install dependencies"
-	@echo "  make update       - Update dependencies"
-	@echo "  make test         - Run tests (requires env vars)"
+	@echo "  make update      - Update dependencies"
+	@echo "  make test        - Run tests (requires env vars)"
+	@echo "  make test-direct-api - Run direct API tests"
+	@echo "  make test-api-client - Run API client tests"
 	@echo "  make run-direct-api - Run direct API example"
 	@echo "  make run-api-client - Run API client example"
-	@echo "  make run-smtp     - Run SMTP example"
-	@echo "  make run-flask    - Run Flask example"
-	@echo "  make cs           - Run code style checks"
-	@echo "  make cs-fix       - Fix code style issues"
-	@echo "  make clean        - Clean build artifacts"
+	@echo "  make run-smtp    - Run SMTP example"
+	@echo "  make run-flask   - Run Flask example"
+	@echo "  make cs          - Run code style checks"
+	@echo "  make cs-fix      - Fix code style issues"
+	@echo "  make clean       - Clean build artifacts"
 	@echo "  make env-template - Create .env.template file"
 	@echo ""
 	@echo "Required environment variables (can be set in .env file):"
@@ -96,4 +106,4 @@ help:
 	@echo "  SHOUTBOX_FROM    - Sender email address"
 	@echo "  SHOUTBOX_TO      - Recipient email address"
 
-.PHONY: check-env install update test run-direct-api run-api-client run-smtp run-flask cs cs-fix clean env-template help
+.PHONY: check-env install update test test-direct-api test-api-client run-direct-api run-api-client run-smtp run-flask cs cs-fix clean env-template help
