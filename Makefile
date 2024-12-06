@@ -57,6 +57,14 @@ test-models:
 test-exceptions:
 	bash -c "set -a && source ./.env && set +a && python -m pytest -s tests/test_exceptions.py -v"
 
+# Test Flask specifically
+test-flask:
+	bash -c "set -a && source ./.env && set +a && python -m pytest -s tests/test_flask.py -v"
+
+# Test Django specifically
+test-django:
+	bash -c "set -a && source ./.env && set +a && python -m pytest -s tests/test_django.py -v"
+
 # Run direct API example
 run-direct-api: check-env
 	bash -c "set -a && source ./.env && set +a && python examples/direct_api.py"
@@ -112,6 +120,8 @@ help:
 	@echo "  make test-smtp   - Run SMTP tests"
 	@echo "  make test-models - Run models tests"
 	@echo "  make test-exceptions - Run exceptions tests"
+	@echo "  make test-flask  - Run Flask tests"
+	@echo "  make test-django - Run Django tests"
 	@echo "  make run-direct-api - Run direct API example"
 	@echo "  make run-api-client - Run API client example"
 	@echo "  make run-smtp    - Run SMTP example"
@@ -126,4 +136,4 @@ help:
 	@echo "  SHOUTBOX_FROM    - Sender email address"
 	@echo "  SHOUTBOX_TO      - Recipient email address"
 
-.PHONY: check-env install update test test-direct-api test-api-client test-client test-smtp test-models test-exceptions run-direct-api run-api-client run-smtp run-flask cs cs-fix clean env-template help
+.PHONY: check-env install update test test-direct-api test-api-client test-client test-smtp test-models test-exceptions test-flask test-django run-direct-api run-api-client run-smtp run-flask cs cs-fix clean env-template help

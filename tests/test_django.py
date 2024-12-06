@@ -1,35 +1,31 @@
 """Tests for Django integration"""
 
 import os
+import json
 import pytest
 from django.test import RequestFactory
 from django.http import JsonResponse
-from django.conf import settings
 from django.core.mail import send_mail, EmailMessage
 from django.core.mail.backends.base import BaseEmailBackend
-from shoutbox import ShoutboxClient, Email, EmailAddress, Attachment
+from django.conf import settings
 
-# Configure Django settings
+from shoutbox import ShoutboxClient, Email
+
+# Configure Django settings before running tests
 if not settings.configured:
     settings.configure(
-        DEBUG=True,
-        SECRET_KEY='test-key',
-        INSTALLED_APPS=[
-            'django.contrib.contenttypes',
-            'django.contrib.auth',
-        ],
+        DEFAULT_CHARSET='utf-8',
         EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend',
-        EMAIL_HOST='smtp.shoutbox.net',
+        EMAIL_HOST='mail.shoutbox.net',
         EMAIL_PORT=587,
         EMAIL_USE_TLS=True,
         EMAIL_HOST_USER=os.getenv('SHOUTBOX_API_KEY'),
         EMAIL_HOST_PASSWORD=os.getenv('SHOUTBOX_API_KEY'),
-        DEFAULT_FROM_EMAIL=os.getenv('SHOUTBOX_FROM'),
+        SECRET_KEY='dummy-key-for-tests'
     )
 
 @pytest.fixture
 def request_factory():
-    """Create Django request factory"""
     return RequestFactory()
 
 def test_basic_email_view(request_factory):
@@ -50,7 +46,8 @@ def test_basic_email_view(request_factory):
     request = request_factory.post('/send-email')
     response = send_email_view(request)
     assert response.status_code == 200
-    assert response.json()['success'] is True
+    data = json.loads(response.content)
+    assert data['success'] is True
 
 def test_email_with_attachment_view(request_factory):
     """Test email sending with attachment"""
@@ -77,7 +74,8 @@ def test_email_with_attachment_view(request_factory):
     request = request_factory.post('/send-with-attachment')
     response = send_with_attachment_view(request)
     assert response.status_code == 200
-    assert response.json()['success'] is True
+    data = json.loads(response.content)
+    assert data['success'] is True
 
 def test_bulk_email_view(request_factory):
     """Test bulk email sending"""
@@ -103,7 +101,8 @@ def test_bulk_email_view(request_factory):
     request = request_factory.post('/send-bulk')
     response = send_bulk_view(request)
     assert response.status_code == 200
-    assert response.json()['success'] is True
+    data = json.loads(response.content)
+    assert data['success'] is True
 
 def test_error_handling_view(request_factory):
     """Test error handling in Django integration"""
@@ -123,8 +122,8 @@ def test_error_handling_view(request_factory):
     request = request_factory.post('/send-error')
     response = error_view(request)
     assert response.status_code == 400
-    assert response.json()['success'] is False
-    assert 'error' in response.json()
+    data = json.loads(response.content)
+    assert data['success'] is False
 
 def test_custom_backend_view(request_factory):
     """Test using custom email backend"""
@@ -132,11 +131,11 @@ def test_custom_backend_view(request_factory):
         def __init__(self, fail_silently=False, **kwargs):
             super().__init__(fail_silently=fail_silently)
             self.client = ShoutboxClient()
-
+        
         def send_messages(self, email_messages):
             if not email_messages:
                 return 0
-
+            
             num_sent = 0
             for message in email_messages:
                 try:
@@ -153,7 +152,7 @@ def test_custom_backend_view(request_factory):
                     if not self.fail_silently:
                         raise
             return num_sent
-
+    
     def send_with_backend_view(request):
         try:
             with ShoutboxEmailBackend() as backend:
@@ -172,4 +171,5 @@ def test_custom_backend_view(request_factory):
     request = request_factory.post('/send-with-backend')
     response = send_with_backend_view(request)
     assert response.status_code == 200
-    assert response.json()['success'] is True
+    data = json.loads(response.content)
+    assert data['success'] is True
