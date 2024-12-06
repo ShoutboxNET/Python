@@ -41,6 +41,14 @@ test-direct-api:
 test-api-client:
 	bash -c "set -a && source ./.env && set +a && python -m pytest -s tests/test_api_client.py -v"
 
+# Test client specifically
+test-client:
+	bash -c "set -a && source ./.env && set +a && python -m pytest -s tests/test_client.py -v"
+
+# Test SMTP specifically
+test-smtp:
+	bash -c "set -a && source ./.env && set +a && python -m pytest -s tests/test_smtp.py -v"
+
 # Run direct API example
 run-direct-api: check-env
 	bash -c "set -a && source ./.env && set +a && python examples/direct_api.py"
@@ -92,6 +100,8 @@ help:
 	@echo "  make test        - Run tests (requires env vars)"
 	@echo "  make test-direct-api - Run direct API tests"
 	@echo "  make test-api-client - Run API client tests"
+	@echo "  make test-client - Run client tests"
+	@echo "  make test-smtp   - Run SMTP tests"
 	@echo "  make run-direct-api - Run direct API example"
 	@echo "  make run-api-client - Run API client example"
 	@echo "  make run-smtp    - Run SMTP example"
@@ -106,4 +116,4 @@ help:
 	@echo "  SHOUTBOX_FROM    - Sender email address"
 	@echo "  SHOUTBOX_TO      - Recipient email address"
 
-.PHONY: check-env install update test test-direct-api test-api-client run-direct-api run-api-client run-smtp run-flask cs cs-fix clean env-template help
+.PHONY: check-env install update test test-direct-api test-api-client test-client test-smtp run-direct-api run-api-client run-smtp run-flask cs cs-fix clean env-template help

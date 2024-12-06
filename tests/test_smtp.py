@@ -99,8 +99,14 @@ def test_send_email_with_multiple_recipients():
     success = client.send(email)
     assert success is True
 
-def test_smtp_error_handling():
+@patch('smtplib.SMTP')
+def test_smtp_error_handling(mock_smtp):
     """Test SMTP error handling"""
+    # Configure mock to raise authentication error
+    mock_instance = Mock()
+    mock_instance.login.side_effect = smtplib.SMTPAuthenticationError(535, b'Authentication failed')
+    mock_smtp.return_value.__enter__.return_value = mock_instance
+    
     # Test with invalid credentials
     client = SMTPClient(api_key="invalid-key")
     
@@ -115,6 +121,8 @@ def test_smtp_error_handling():
         client.send(email)
     
     # Test with invalid server
+    mock_instance.login.side_effect = smtplib.SMTPServerDisconnected()
+    
     client = SMTPClient(
         api_key=os.getenv('SHOUTBOX_API_KEY'),
         host="invalid.smtp.server"

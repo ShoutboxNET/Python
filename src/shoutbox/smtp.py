@@ -20,7 +20,7 @@ class SMTPClient:
     def __init__(
         self, 
         api_key: str = None,
-        host: str = "api.shoutbox.net",  # Changed from smtp.shoutbox.net
+        host: str = "mail.shoutbox.net",  
         port: int = 587,
         use_tls: bool = True,
         timeout: int = 30
