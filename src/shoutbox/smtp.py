@@ -60,6 +60,10 @@ class SMTPClient:
             # Set To header(s)
             msg['To'] = ', '.join(str(addr) for addr in email.to)
             
+            # Set CC header(s) if provided
+            if email.cc:
+                msg['Cc'] = ', '.join(str(addr) for addr in email.cc)
+            
             # Set Reply-To if provided
             if email.reply_to:
                 msg['Reply-To'] = str(email.reply_to)
@@ -95,9 +99,13 @@ class SMTPClient:
                 
                 # Get all recipient addresses
                 recipients = [addr.email for addr in email.to]
+                if email.cc:
+                    recipients.extend(addr.email for addr in email.cc)
+                if email.bcc:
+                    recipients.extend(addr.email for addr in email.bcc)
                 
                 # Send the email
-                server.send_message(msg)
+                server.send_message(msg, to_addrs=recipients)
             
             return True
             
