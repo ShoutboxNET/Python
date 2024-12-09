@@ -90,6 +90,15 @@ cs:
 cs-fix:
 	black src/ tests/ examples/
 
+build: 	
+	rm -rf dist/
+	bash -c "source venv/bin/activate && python -m build"
+
+dist: build
+	bash -c "source venv/bin/activate && twine upload dist/*"
+	
+
+
 # Clean up
 clean:
 	rm -rf build/
