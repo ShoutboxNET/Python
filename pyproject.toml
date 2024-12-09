@@ -3,10 +3,10 @@ requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "shoutbox"
+name = "shoutbox_tluyben"
 version = "0.1.0"
 authors = [
-    {name = "Your Name", email = "your.email@example.com"},
+    {name = "Tycho Luyben", email = "tycho@e-lab.nl"},
 ]
 description = "A Python client for the Shoutbox Email API"
 readme = "README.md"
@@ -41,7 +41,7 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/shoutbox"
-Documentation = "https://shoutbox.readthedocs.io/"
-Repository = "https://github.com/yourusername/shoutbox.git"
-"Bug Tracker" = "https://github.com/yourusername/shoutbox/issues"
+Homepage = "https://shoutbox.net"
+Documentation = "https://shoutbox.net/docs"
+Repository = "https://github.com/shoutboxnet/python.git"
+"Bug Tracker" = "https://github.com/shoutboxnet/python/issues"

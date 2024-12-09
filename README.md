@@ -86,23 +86,37 @@ try:
 
     client.send(email)
     
-    # Email with attachment
-    with open('document.pdf', 'rb') as f:
-        attachment = Attachment(
-            filename='document.pdf',
-            content=f.read(),
-            content_type='application/pdf'
-        )
-
-    email_with_attachment = Email(
+    # Email with attachments
+    email_with_attachments = Email(
         from_email="sender@example.com",
         to="recipient@example.com",
-        subject="Test Email with Attachment",
-        html="<h1>Hello!</h1><p>This email includes an attachment.</p>",
+        subject="Test Email with Attachments",
+        html="<h1>Hello!</h1><p>This email includes attachments.</p>",
+        attachments=[
+            # Just provide the filepath - content and type are handled automatically
+            Attachment(filepath="path/to/document.pdf"),
+            Attachment(filepath="path/to/spreadsheet.xlsx")
+        ]
+    )
+
+    client.send(email_with_attachments)
+
+    # You can still attach content directly if needed
+    attachment = Attachment(
+        filename='custom.txt',
+        content=b"Custom content",
+        content_type='text/plain'
+    )
+
+    email_with_custom = Email(
+        from_email="sender@example.com",
+        to="recipient@example.com",
+        subject="Test Email with Custom Attachment",
+        html="<h1>Hello!</h1><p>This email includes a custom attachment.</p>",
         attachments=[attachment]
     )
 
-    client.send(email_with_attachment)
+    client.send(email_with_custom)
 
 except Exception as e:
     print(f"Error: {str(e)}")
@@ -139,7 +153,7 @@ except Exception as e:
 ### Library Features
 - Type-safe email options
 - Built-in error handling
-- File attachment support
+- Simple file attachment support (just provide filepath)
 - Custom headers support
 - Multiple recipient types (to, cc, bcc)
 - Choice between API and SMTP clients

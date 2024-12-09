@@ -10,6 +10,8 @@ import typing
 from dataclasses import dataclass, field
 from email.utils import parseaddr
 import re
+import os
+import magic
 
 from .exceptions import ValidationError
 
@@ -38,15 +40,41 @@ class EmailAddress:
 
 @dataclass
 class Attachment:
-    filename: str
-    content: bytes
+    filepath: typing.Optional[str] = None
+    filename: typing.Optional[str] = None
+    content: typing.Optional[bytes] = None
     content_type: typing.Optional[str] = None
+
+    def __post_init__(self):
+        if not self.filepath and not self.content:
+            raise ValidationError("Either filepath or content must be provided")
+
+        if self.filepath:
+            # Load content from file if not provided
+            if not self.content:
+                with open(self.filepath, 'rb') as f:
+                    self.content = f.read()
+            
+            # Use filepath basename as filename if not provided
+            if not self.filename:
+                self.filename = os.path.basename(self.filepath)
+            
+            # Detect content type if not provided
+            if not self.content_type:
+                mime = magic.Magic(mime=True)
+                self.content_type = mime.from_file(self.filepath)
+        
+        if not self.content_type:
+            self.content_type = 'application/octet-stream'
+        
+        if not self.filename:
+            raise ValidationError("Filename must be provided when using content directly")
 
     def to_dict(self):
         return {
             'filename': self.filename,
             'content': base64.b64encode(self.content).decode(),
-            'content_type': self.content_type or 'application/octet-stream'
+            'content_type': self.content_type
         }
 
 @dataclass

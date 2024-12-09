@@ -18,10 +18,13 @@ class ShoutboxClient:
     def __init__(
         self, 
         api_key: str = None,
-        base_url: str = "https://api.shoutbox.net",
+        base_url: str = os.getenv('SHOUTBOX_API_ENDPOINT', 'https://api.shoutbox.net'),
         timeout: int = 30,
         verify_ssl: bool = True
     ):
+        print("ShoutboxClient.__init__")
+        print(base_url)
+
         self.api_key = api_key or os.getenv('SHOUTBOX_API_KEY')
         if not self.api_key:
             raise ValueError("API key must be provided or set in SHOUTBOX_API_KEY environment variable")

@@ -10,7 +10,8 @@ from shoutbox.exceptions import ShoutboxError, ValidationError, APIError
 def test_client_initialization():
     """Test client initialization with API key"""
     # Test with direct API key
-    client = ShoutboxClient(api_key=os.getenv('SHOUTBOX_API_KEY'))
+
+    client = ShoutboxClient(api_key=os.getenv('SHOUTBOX_API_KEY'), base_url=os.getenv('SHOUTBOX_API_ENDPOINT', 'https://api.shoutbox.net'))
     assert client.api_key == os.getenv('SHOUTBOX_API_KEY')
     
     # Test with environment variable
@@ -55,6 +56,31 @@ def test_send_email_with_attachment():
         subject="Test Email with Attachment via API Client",
         html="<h1>Test</h1><p>This email includes an attachment.</p>",
         attachments=[attachment]
+    )
+    
+    response = client.send(email)
+    assert response is not None
+    assert isinstance(response, dict)
+
+def test_send_email_with_example_attachments():
+    """Test sending an email with example attachments (important.txt and test.xlsx)"""
+    client = ShoutboxClient()
+    
+    attachments = [
+        Attachment(
+            filepath=os.path.join('examples', 'important.txt')
+        ),
+        Attachment(
+            filepath=os.path.join('examples', 'test.xlsx')
+        )
+    ]
+    
+    email = Email(
+        from_email=os.getenv('SHOUTBOX_FROM'),
+        to=os.getenv('SHOUTBOX_TO'),
+        subject="Test Email with Example Attachments via API Client",
+        html="<h1>Test</h1><p>This email includes both important.txt and test.xlsx attachments.</p>",
+        attachments=attachments
     )
     
     response = client.send(email)
