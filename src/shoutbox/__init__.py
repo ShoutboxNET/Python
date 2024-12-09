@@ -10,7 +10,7 @@ from .smtp import SMTPClient
 from .models import Email, EmailAddress, Attachment
 from .exceptions import ShoutboxError, ValidationError, APIError
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 __all__ = [
     'ShoutboxClient',
