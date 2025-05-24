@@ -49,6 +49,7 @@ else:
 ```
 
 ### Direct API Features
+
 - Minimal dependencies (only requests)
 - Simple implementation
 - Full control over the request
@@ -84,8 +85,8 @@ try:
         reply_to="reply@example.com"
     )
 
-    client.send(email)
-    
+    print(client.send(email))
+
     # Email with attachments
     email_with_attachments = Email(
         from_email="sender@example.com",
@@ -99,7 +100,7 @@ try:
         ]
     )
 
-    client.send(email_with_attachments)
+    print(client.send(email_with_attachments))
 
     # You can still attach content directly if needed
     attachment = Attachment(
@@ -116,7 +117,7 @@ try:
         attachments=[attachment]
     )
 
-    client.send(email_with_custom)
+    print(client.send(email_with_custom))
 
 except Exception as e:
     print(f"Error: {str(e)}")
@@ -144,13 +145,14 @@ try:
         }
     )
 
-    client.send(email)
+    print(client.send(email))
 
 except Exception as e:
     print(f"Error: {str(e)}")
 ```
 
 ### Library Features
+
 - Type-safe email options
 - Built-in error handling
 - Simple file attachment support (just provide filepath)
@@ -177,7 +179,7 @@ def send_email():
         subject=request.json['subject'],
         html=request.json['html']
     )
-    
+
     result = client.send(email)
     return {'success': True}
 ```
@@ -185,11 +187,13 @@ def send_email():
 ### Django Integration
 
 1. Add configuration to `settings.py`:
+
 ```python
 SHOUTBOX_API_KEY = 'your-api-key'
 ```
 
 2. Usage example:
+
 ```python
 from shoutbox import ShoutboxClient, Email
 
@@ -202,7 +206,7 @@ def send_notification(request):
         subject="Notification",
         html="<h1>New notification</h1>"
     )
-    
+
     client.send(email)
     return JsonResponse({'success': True})
 ```
@@ -210,16 +214,19 @@ def send_notification(request):
 ## Development
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/shoutboxnet/python.git
 ```
 
 2. Install dependencies:
+
 ```bash
 pip install -r requirements-dev.txt
 ```
 
 3. Run tests:
+
 ```bash
 make test
 ```
