@@ -60,7 +60,7 @@ else:
 ### Installation
 
 ```bash
-pip install shoutbox
+pip install shoutboxnet
 ```
 
 ### 2.1 API Client Usage
@@ -211,7 +211,7 @@ def send_notification(request):
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/shoutboxnet/shoutbox-python.git
+git clone https://github.com/shoutboxnet/python.git
 ```
 
 2. Install dependencies:
