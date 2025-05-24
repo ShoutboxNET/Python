@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from email.utils import parseaddr
 import re
 import os
-import magic
+import mimetypes
 
 from .exceptions import ValidationError
 
@@ -61,8 +61,8 @@ class Attachment:
             
             # Detect content type if not provided
             if not self.content_type:
-                mime = magic.Magic(mime=True)
-                self.content_type = mime.from_file(self.filepath)
+                content_type, _ = mimetypes.guess_type(self.filepath)
+                self.content_type = content_type or 'application/octet-stream'
         
         if not self.content_type:
             self.content_type = 'application/octet-stream'
