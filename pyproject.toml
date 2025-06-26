@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "shoutboxnet"
-version = "0.1.6"
+version = "0.1.7"
 authors = [
-    {name = "Tycho Luyben", email = "tycho@e-lab.nl"},
+    {name = "Tycho Luyben", email = "tycho@shoutbox.net"},
 ]
 description = "A Python client for the Shoutbox Email API"
 readme = "README.md"

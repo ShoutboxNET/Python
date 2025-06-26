@@ -1,6 +1,32 @@
+![Header](https://github.com/user-attachments/assets/52d6ff91-3425-4e31-bff3-426bbb6eb113)
+
+<p align="center">
+  <a href="https://docs.shoutbox.net/quickstart" style="font-size: 2em; text-decoration: underline; color: #0366d6;">Quickstart Docs</a>
+</p>
+
+<p align="center" style="font-size: 1.5em;">
+  <b>Language & Framework guides</b>
+</p>
+
+<p align="center">
+  <a href="https://docs.shoutbox.net/examples/nextjs-lib">Next.js</a> -
+  <a href="https://docs.shoutbox.net/examples/typescript">Typescript</a> -
+  <a href="https://docs.shoutbox.net/examples/javascript-lib">Javascript</a> -
+  <a href="https://docs.shoutbox.net/examples/python-lib">Python</a> -
+  <a href="https://docs.shoutbox.net/examples/php-lib">PHP</a> -
+  <a href="https://docs.shoutbox.net/examples/php-laravel-lib">Laravel</a> -
+  <a href="https://docs.shoutbox.net/examples/go">Go</a>
+</p>
+
 # Shoutbox.net Developer API - Python Library
 
 Shoutbox.net is a Developer API designed to send transactional emails at scale. This documentation covers all Python integration methods, from direct API calls to full framework integration.
+
+## Setup
+
+For these integrations to work, you will need an <a href="https://hub.shoutbox.net" target="_blank">account</a> on <a href="https://shoutbox.net" target="_blank">Shoutbox.net</a>. You can create and copy the required API key on the <a href="https://hub.shoutbox.net/app/dashboard" target="_blank">Shoutbox.net dashboard</a>!
+
+The API key is required for any call to the <a href="https://shoutbox.net" target="_blank">Shoutbox.net</a> backend; for SMTP, the API key is your password and 'shoutbox' the user to send emails.
 
 ## Integration Methods
 
